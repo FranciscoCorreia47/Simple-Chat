@@ -1,0 +1,7 @@
++-------------------------+
+|      To Implement:      |
++-------------------------+
+
+-> XOR Encription on HOSTs only (Server only transmits encripted data along with the key)
+-> Discovering what IP on the network is the Server's
+-> Make a good-looking CLI interface
