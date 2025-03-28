@@ -1,11 +1,4 @@
-#include <winsock2.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ws2tcpip.h>
-
-#define MAX_MSG_SIZE 512
-#define PORT 5000
+#include "simple-chat_functions.h"
 
 int main(void) {
 
@@ -15,16 +8,11 @@ int main(void) {
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 
-	struct sockaddr_in saddr = {
-		.sin_family = AF_INET,
-		.sin_port = htons(PORT)
-	};
+	struct sockaddr_in *serverAddress = generate_IPv4_Address(ip, PORT);
 
-	inet_pton(AF_INET, ip, &saddr.sin_addr.s_addr);
+	int socketFileDescriptor = initialize_Socket_IPv4();
 
-	int socketfd = socket(AF_INET, SOCK_STREAM, 0);
-
-	int connection = connect(socketfd, (struct sockaddr*)&saddr, sizeof(saddr));
+	int connection = connect(socketFileDescriptor, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
 	if (connection == 0)
 		printf("Connection was successful!\n");
@@ -33,9 +21,12 @@ int main(void) {
 	
 	printf("> ");
 	scanf("%s", message);
-	send(socketfd, message, strlen(message), 0);
+	send(socketFileDescriptor, message, strlen(message), 0);
+	recv(socketFileDescriptor, message, MAX_MSG_SIZE, 0);
 
-	closesocket(socketfd);
+	printf("Response: %s\n", message);
+
+	closesocket(socketFileDescriptor);
 
 	return 0;
 }
