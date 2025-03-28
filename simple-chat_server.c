@@ -1,10 +1,5 @@
-#include <winsock2.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "simple-chat_functions.h"
 
-#define MAX_MSG_SIZE 512
-#define PORT 5000
 
 int main(void) {
 
@@ -12,31 +7,33 @@ int main(void) {
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 
+	int serverFD = initialize_Socket_IPv4();
+	struct sockaddr_in clientAddress;
+	struct sockaddr_in *serverAddress = generate_IPv4_Address("", PORT);
 
-	struct sockaddr_in caddr;
-	struct sockaddr_in saddr = {
-		.sin_family = AF_INET,
-		.sin_addr.s_addr = htonl(INADDR_ANY),
-		.sin_port = htons(PORT)
-	};
+	int clientFD, x;
+	int result = bind(serverFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
-	int server = socket(AF_INET, SOCK_STREAM, 0);
-	int client, x;
-	bind(server, (struct sockaddr*)&saddr, sizeof(saddr));
+	if (result)
+		printf("Socket was bound successfuly!\n");
+	else
+		printf("Binding error!\n");
 
-	listen(server, 5);
+	int listenResult = listen(serverFD, 5);
 
-	while (1) {
-		client = accept(server, (struct sockaddr*) &caddr, (int*) sizeof(caddr));
-		x = recv(client, buff, MAX_MSG_SIZE, 0);
+	if (listenResult)
+		printf("Socket is listening!\n");
+	else
+		printf("Listening error!\n");
+
+	clientFD = accept(serverFD, (struct sockaddr*) &clientAddress, (int*) sizeof(clientAddress));
+	recv(clientFD, buff, MAX_MSG_SIZE, 0);
+
+	printf("Message: %s\n", buff);
 		
+		
+	closesocket(clientFD);
 
-		//This puts will suffer changes
-		printf("%s", buff);
-		fflush(stdout);
-
-		closesocket(client);
-	}
 
 	return 0;
 }
