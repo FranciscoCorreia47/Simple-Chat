@@ -8,7 +8,7 @@ int main(void) {
 
 	SOCKET server = initialize_Socket_IPv4();
 
-	struct sockaddr_in serverAddress = generate_IPv4_Address("127.0.0.1", PORT);
+	struct sockaddr_in serverAddress = generate_IPv4_Address("", PORT);
 
 	bind(server, (struct sockaddr*)serverAddress, sizeof(*serverAddress));
 
