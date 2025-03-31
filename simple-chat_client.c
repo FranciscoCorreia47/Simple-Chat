@@ -1,41 +1,40 @@
-#include <winsock2.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ws2tcpip.h>
-
-#define MAX_MSG_SIZE 512
-#define PORT 5000
+#include "simple-chat_functions.h"
 
 int main(void) {
 
-	char message[MAX_MSG_SIZE];
-
-	char* ip = "127.0.0.1";
 	WSADATA wsa;
-	WSAStartup(MAKEWORD(2, 0), &wsa);
+	WSAStartup(MAKEWORD(2, 2), &wsa);
 
-	struct sockaddr_in saddr = {
-		.sin_family = AF_INET,
-		.sin_port = htons(PORT)
-	};
+	SOCKET client = initialize_Socket_IPv4();
 
-	inet_pton(AF_INET, ip, &saddr.sin_addr.s_addr);
+	struct sockaddr_in client_address = generate_IPv4_Address("127.0.0.1", PORT);
 
-	int socketfd = socket(AF_INET, SOCK_STREAM, 0);
+	int connectionResult = connect(client, (struct sockaddr*)client_address, sizeof(client_address));
+	switch (connectionResult) {
+		case SOCKET_ERROR:
+			wprintf(L"Failed to Connect to the server %ld\n", WSAGetLastError());
+			closesocket(client);
+			WSACleanup();
+			return 1;
+		default:
+			wprintf(L"Connected\n");
+			break;
+	}
 
-	int connection = connect(socketfd, (struct sockaddr*)&saddr, sizeof(saddr));
-
-	if (connection == 0)
-		printf("Connection was successful!\n");
-	else
-		printf("Connection error!\n");
-	
-	printf("> ");
+	char message[MAX_MSG_SIZE] = { 0 };
+	printf("Write your message: ");
 	scanf("%s", message);
-	send(socketfd, message, strlen(message), 0);
 
-	closesocket(socketfd);
+	send(client, message, MAX_MSG_SIZE, 0);
+
+	recv(client, message, MAX_MSG_SIZE, 0);
+
+	wprintf(L"%s", message);
+
+	Sleep(2000);
+
+	closesocket(client);
+	WSACleanup();
 
 	return 0;
 }
