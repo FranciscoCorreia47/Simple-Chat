@@ -1,8 +1,11 @@
 #include "simple-chat_functions.h"
 
+DWORD WINAPI send_messages(LPVOID serverFD);
+
+char buff[MAX_MSG_SIZE];
+
 int main(void) {
 	int bytes_read = 0;
-	char buff[MAX_MSG_SIZE];
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 
@@ -29,11 +32,15 @@ int main(void) {
 	
 	while((bytes_read = recv(clientFD, buff, MAX_MSG_SIZE, 0)) > 0){
 		printf("Message: %s\n", buff);
-		send(clientFD, buff, bytes_read, 0);
 	}
+	HANDLE thread = CreateThread(NULL, send_messages, (LPVOID)&serverFD, 0, NULL);
 	
 	closesocket(clientFD);
+	
+	return 0;
+}
 
-
+DWORD WINAPI send_messages(LPVOID serverFD){
+	send(clientFD, buff, bytes_read, 0);
 	return 0;
 }
