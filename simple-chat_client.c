@@ -9,7 +9,7 @@ int main(void) {
 
 	struct sockaddr_in client_address = generate_IPv4_Address("127.0.0.1", PORT);
 
-	int connectionResult = connect(client, (struct sockaddr*)client_address, sizeof(client_address));
+	int connectionResult = connect(client, (struct sockaddr*)&client_address, sizeof(client_address));
 	switch (connectionResult) {
 		case SOCKET_ERROR:
 			wprintf(L"Failed to Connect to the server %ld\n", WSAGetLastError());
