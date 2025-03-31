@@ -1,42 +1,31 @@
-#include <winsock2.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "simple-chat_functions.h"
 
-#define MAX_MSG_SIZE 512
-#define PORT 5000
 
 int main(void) {
 
-	char buff[MAX_MSG_SIZE];
 	WSADATA wsa;
-	WSAStartup(MAKEWORD(2, 0), &wsa);
+	WSAStartup(MAKEWORD(2, 2), &wsa);
 
+	SOCKET server = initialize_Socket_IPv4();
 
-	struct sockaddr_in caddr;
-	struct sockaddr_in saddr = {
-		.sin_family = AF_INET,
-		.sin_addr.s_addr = htonl(INADDR_ANY),
-		.sin_port = htons(PORT)
-	};
+	struct sockaddr_in serverAddress = generate_IPv4_Address("127.0.0.1", PORT);
 
-	int server = socket(AF_INET, SOCK_STREAM, 0);
-	int client, x;
-	bind(server, (struct sockaddr*)&saddr, sizeof(saddr));
+	bind(server, (struct sockaddr*)serverAddress, sizeof(*serverAddress));
 
 	listen(server, 5);
 
-	while (1) {
-		client = accept(server, (struct sockaddr*) &caddr, (int*) sizeof(caddr));
-		x = recv(client, buff, MAX_MSG_SIZE, 0);
-		
+	SOCKET client = accept(server, NULL, NULL);
 
-		//This puts will suffer changes
-		printf("%s", buff);
-		fflush(stdout);
+	char message[MAX_MSG_SIZE] = { 0 };
 
-		closesocket(client);
-	}
+	recv(client, message, MAX_MSG_SIZE, 0);
+
+	wprintf(L"Received message %s", message);
+
+	closesocket(client);
+	closesocket(server);
+
+	WSACleanup();
 
 	return 0;
 }
