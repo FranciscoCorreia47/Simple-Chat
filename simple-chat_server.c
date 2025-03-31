@@ -1,8 +1,7 @@
 #include "simple-chat_functions.h"
 
-
 int main(void) {
-
+	int bytes_read = 0;
 	char buff[MAX_MSG_SIZE];
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
@@ -27,11 +26,12 @@ int main(void) {
 		printf("Listening error!\n");
 
 	clientFD = accept(serverFD, (struct sockaddr*) &clientAddress, (int*) sizeof(clientAddress));
-	recv(clientFD, buff, MAX_MSG_SIZE, 0);
-
-	printf("Message: %s\n", buff);
-		
-		
+	
+	while((bytes_read = recv(clientFD, buff, MAX_MSG_SIZE, 0)) > 0){
+		printf("Message: %s\n", buff);
+		send(clientFD, buff, bytes_read, 0);
+	}
+	
 	closesocket(clientFD);
 
 
