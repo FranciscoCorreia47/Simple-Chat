@@ -35,7 +35,7 @@ int main(void) {
 }
 
 DWORD WINAPI receive_messages(LPVOID socketFileDescriptor){
-	while((bytes_read = recv(socketFileDescriptor, buff, sizeof(buff), 0) > 0){
+	while((bytes_read = recv(socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
 		printf("Received: %s", buff);
 	}
 	return 0;
