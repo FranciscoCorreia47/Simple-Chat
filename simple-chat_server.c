@@ -10,7 +10,7 @@ int main(void) {
 
 	struct sockaddr_in serverAddress = generate_IPv4_Address("", PORT);
 
-	bind(server, (struct sockaddr*)serverAddress, sizeof(*serverAddress));
+	bind(server, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
 	listen(server, 5);
 
