@@ -10,11 +10,12 @@
 #include <WS2tcpip.h>
 #include <Windows.h>
 #include <malloc.h>
+#include <threads.h>
 
 #pragma comment(lib, "WS2_32.lib")
 
 #define MAX_MSG_SIZE 512
-#define PORT 50000
+#define PORT 5000
 
 SOCKET initialize_Socket_IPv4();
 

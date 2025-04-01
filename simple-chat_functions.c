@@ -1,8 +1,7 @@
 #include "simple-chat_functions.h"
 
 //This function initializes a IPv4 Socket
-SOCKET initialize_Socket_IPv4() {
-	
+SOCKET initialize_Socket_IPv4() {	
 	return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 }
 
@@ -19,6 +18,4 @@ struct sockaddr_in generate_IPv4_Address(char* ip, int port) {
 		address.sin_addr.s_addr = INADDR_ANY; //INADDR_ANY means any IP
 	else
 		inet_pton(AF_INET, ip, &address.sin_addr); //If whe actually have an IP, transform it to the network presentation form
-
-	return address;
 }
