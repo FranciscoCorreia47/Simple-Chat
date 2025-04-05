@@ -3,11 +3,12 @@
 char buff[MAX_MSG_SIZE];
 char message[MAX_MSG_SIZE];
 int buff_bytes = 0;
+pthread_mutex_t = print_mutex;
 
-DWORD WINAPI receive_messages(LPVOID socketFileDescriptor);
+void *receive_messages(void *socketFileDescriptor);
 
 int main(void) {
-	
+	pthread_t thread1;
 	char* ip = "127.0.0.1";
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
@@ -23,7 +24,9 @@ int main(void) {
 	else
 		printf("Connection error!\n");
 
-	HANDLE thread = CreateThread(NULL, 0, receive_messages, (LPVOID)&socketFileDescriptor, 0, NULL);
+	pthread_mutex_init(&print_mutex, NULL);
+	pthread_create(&thread1, NULL, receive_messages, &socketFileDescriptor);
+	
 	while(1){
 		printf("> ");
 		scanf("%s", message);
@@ -31,12 +34,19 @@ int main(void) {
 	}
 	
 	closesocket(socketFileDescriptor);
+	
+	pthread_join(thread1, NULL);
+	
 	return 0;
 }
 
-DWORD WINAPI receive_messages(LPVOID socketFileDescriptor){
+
+void *receive_messages(void *socketFileDescriptor){
+	buff[bytes_read] = '\0';
 	while((bytes_read = recv(socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
-		printf("Received: %s", buff);
+		pthread_mutex_lock(&print_mutex);
+		printf("Received: %s\n", buff);
+		printf_mutex_unlock(&printf_mutex);
 	}
-	return 0;
+	return NULL;
 }
