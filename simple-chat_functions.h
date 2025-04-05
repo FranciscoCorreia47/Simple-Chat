@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <windows.h>
-#include <threads.h>
+#include <pthread.h>
 
 #define MAX_MSG_SIZE 512
 #define PORT 5000
