@@ -1,10 +1,12 @@
 #include "simple-chat_functions.h"
 
-DWORD WINAPI send_messages(LPVOID serverFD);
+void *receive_messages(void *clientFD);
 
 char buff[MAX_MSG_SIZE];
+pthread_mutex_t = print_mutex;
 
-int main(void) {
+int main(void){
+	pthread_t = thread1;
 	int bytes_read = 0;
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
@@ -30,17 +32,28 @@ int main(void) {
 
 	clientFD = accept(serverFD, (struct sockaddr*) &clientAddress, (int*) sizeof(clientAddress));
 	
-	while((bytes_read = recv(clientFD, buff, MAX_MSG_SIZE, 0)) > 0){
-		printf("Message: %s\n", buff);
+	pthread_mutex_init(&print_mutex, NULL);
+	pthread_create(&thread1, NULL, receive_messages, &clientFD);
+
+	while(bytes_read > 0){
+		send(clientFD, buff, bytes_read, 0);
 	}
-	HANDLE thread = CreateThread(NULL, send_messages, (LPVOID)&serverFD, 0, NULL);
 	
 	closesocket(clientFD);
+	
+	pthread_join(thread1, NULL);
 	
 	return 0;
 }
 
-DWORD WINAPI send_messages(LPVOID serverFD){
-	send(clientFD, buff, bytes_read, 0);
-	return 0;
+void *receive_messages(void *clientFD){
+	buff[bytes_read] = '\0';
+	while((bytes_read = recv(clientFD, buff, sizeof(buff), 0)) > 0){
+		pthread_mutex_lock(&print_mutex);
+		printf("Message: %s\n", buff);
+		fflush(stdout);
+		printf_mutex_unlock(&printf_mutex);
+	}
+	return NULL;
 }
+
