@@ -46,6 +46,7 @@ void *receive_messages(void *socketFileDescriptor){
 	while((bytes_read = recv(socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
 		pthread_mutex_lock(&print_mutex);
 		printf("Received: %s\n", buff);
+		fflush(stdout);
 		printf_mutex_unlock(&printf_mutex);
 	}
 	return NULL;
