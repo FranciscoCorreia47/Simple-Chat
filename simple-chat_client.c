@@ -1,4 +1,5 @@
 #include "simple-chat_functions.h"
+#include "simple-chat_tweaks.h"
 
 char buff[MAX_MSG_SIZE];
 char message[MAX_MSG_SIZE];
@@ -30,6 +31,7 @@ int main(void) {
 	while(1){
 		printf("> ");
 		scanf("%s", message);
+		encrypt(message)
 		send(socketFileDescriptor, message, strlen(message), 0);
 	}
 	
@@ -44,6 +46,7 @@ int main(void) {
 void *receive_messages(void *socketFileDescriptor){
 	buff[bytes_read] = '\0';
 	while((bytes_read = recv(socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
+		encrypt(buff);
 		pthread_mutex_lock(&print_mutex);
 		printf("Received: %s\n", buff);
 		fflush(stdout);
