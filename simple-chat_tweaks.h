@@ -1,4 +1,4 @@
-#include "simple-chat_header.h"
+#include "simple-chat_functions.h"
 
 void encrypt(char text[512]){
   char key[6] = "X̌₽æþ¤";
