@@ -4,9 +4,9 @@
 char buff[MAX_MSG_SIZE];
 char message[MAX_MSG_SIZE];
 int buff_bytes = 0;
-pthread_mutex_t = print_mutex;
+pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void *receive_messages(void *socketFileDescriptor);
+void *receive_messages(void *arg);
 
 int main(void) {
 	pthread_t thread1;
@@ -43,7 +43,8 @@ int main(void) {
 }
 
 
-void *receive_messages(void *socketFileDescriptor){
+void *receive_messages(void *arg){
+    SOCKET *socketFileDescriptor = (SOCKET *)arg;
 	buff[bytes_read] = '\0';
 	while((bytes_read = recv(socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
 		encrypt(buff);
