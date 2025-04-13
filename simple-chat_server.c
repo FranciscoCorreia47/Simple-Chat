@@ -1,9 +1,9 @@
 #include "simple-chat_functions.h"
 
-void *receive_messages(void *clientFD);
+void *receive_messages(void *arg);
 
 char buff[MAX_MSG_SIZE];
-pthread_mutex_t = print_mutex;
+pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(void){
 	pthread_t = thread1;
@@ -46,7 +46,8 @@ int main(void){
 	return 0;
 }
 
-void *receive_messages(void *clientFD){
+void *receive_messages(void *arg){
+	SOCKET *clientFD = (SOCKET *)arg;
 	buff[bytes_read] = '\0';
 	while((bytes_read = recv(clientFD, buff, sizeof(buff), 0)) > 0){
 		pthread_mutex_lock(&print_mutex);
