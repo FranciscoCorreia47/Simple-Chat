@@ -1,4 +1,5 @@
 #include "simple-chat_functions.h"
+#include "simple-chat_tweaks.h"
 
 void *receive_messages(void *arg);
 
