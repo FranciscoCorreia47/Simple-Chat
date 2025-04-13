@@ -4,10 +4,10 @@ void *receive_messages(void *arg);
 
 char buff[MAX_MSG_SIZE];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
+int bytes_read = 0;
 
 int main(void){
-	pthread_t = thread1;
-	int bytes_read = 0;
+	pthread_t thread1;
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 0), &wsa);
 
@@ -18,26 +18,23 @@ int main(void){
 	int clientFD, x;
 	int result = bind(serverFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
-	if (result)
+	if (result == 0)
 		printf("Socket was bound successfuly!\n");
 	else
 		printf("Binding error!\n");
 
 	int listenResult = listen(serverFD, 5);
 
-	if (listenResult)
+	if (listenResult == 0)
 		printf("Socket is listening!\n");
 	else
 		printf("Listening error!\n");
 
-	clientFD = accept(serverFD, (struct sockaddr*) &clientAddress, (int*) sizeof(clientAddress));
+	int client_size = sizeof(clientAddress);
+	clientFD = accept(serverFD, (struct sockaddr*) &clientAddress, &client_size);
 	
 	pthread_mutex_init(&print_mutex, NULL);
 	pthread_create(&thread1, NULL, receive_messages, &clientFD);
-
-	while(bytes_read > 0){
-		send(clientFD, buff, bytes_read, 0);
-	}
 	
 	closesocket(clientFD);
 	
@@ -49,11 +46,14 @@ int main(void){
 void *receive_messages(void *arg){
 	SOCKET *clientFD = (SOCKET *)arg;
 	buff[bytes_read] = '\0';
-	while((bytes_read = recv(clientFD, buff, sizeof(buff), 0)) > 0){
+	while((bytes_read = recv(*clientFD, buff, sizeof(buff), 0)) > 0){
 		pthread_mutex_lock(&print_mutex);
 		printf("Message: %s\n", buff);
 		fflush(stdout);
-		printf_mutex_unlock(&printf_mutex);
+		pthread_mutex_unlock(&print_mutex);
+
+
+		send(*clientFD, buff, bytes_read, 0);
 	}
 	return NULL;
 }
