@@ -52,7 +52,7 @@ void *receive_messages(void *arg){
 		fflush(stdout);
 		pthread_mutex_unlock(&print_mutex);
 
-
+		encrypt(buff);
 		send(*clientFD, buff, bytes_read, 0);
 	}
 	return NULL;
