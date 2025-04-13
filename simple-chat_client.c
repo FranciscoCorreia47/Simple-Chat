@@ -3,7 +3,7 @@
 
 char buff[MAX_MSG_SIZE];
 char message[MAX_MSG_SIZE];
-int buff_bytes = 0;
+int bytes_read = 0;
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void *receive_messages(void *arg);
@@ -30,8 +30,7 @@ int main(void) {
 	
 	while(1){
 		printf("> ");
-		scanf("%s", message);
-		encrypt(message)
+		scanf("%[^\n]s", message);
 		send(socketFileDescriptor, message, strlen(message), 0);
 	}
 	
@@ -46,12 +45,12 @@ int main(void) {
 void *receive_messages(void *arg){
     SOCKET *socketFileDescriptor = (SOCKET *)arg;
 	buff[bytes_read] = '\0';
-	while((bytes_read = recv(socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
+	while((bytes_read = recv(*socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
 		encrypt(buff);
 		pthread_mutex_lock(&print_mutex);
 		printf("Received: %s\n", buff);
 		fflush(stdout);
-		printf_mutex_unlock(&printf_mutex);
+		pthread_mutex_unlock(&print_mutex);
 	}
 	return NULL;
 }
