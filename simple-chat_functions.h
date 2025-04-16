@@ -15,7 +15,7 @@
 
 #pragma comment(lib, "WS2_32.lib")
 
-#define MAX_MSG_SIZE 512
+#define MAX_MSG_SIZE 1024
 #define PORT 50000
 
 int checkPort5000();
