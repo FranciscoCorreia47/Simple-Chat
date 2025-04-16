@@ -1,7 +1,6 @@
 #include "simple-chat_functions.h"
 
 char buff[MAX_MSG_SIZE];
-char message[MAX_MSG_SIZE];
 int buff_bytes = 0;
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
