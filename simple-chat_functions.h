@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <windows.h>
 #include <pthread.h>
+#include "simple-chat_tweaks.h"
 
 #define MAX_MSG_SIZE 512
 #define PORT 5000
