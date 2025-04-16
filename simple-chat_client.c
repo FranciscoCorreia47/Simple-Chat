@@ -1,54 +1,77 @@
 #include "simple-chat_functions.h"
-#include "simple-chat_tweaks.h"
 
 char buff[MAX_MSG_SIZE];
 char message[MAX_MSG_SIZE];
-int bytes_read = 0;
+int buff_bytes = 0;
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void *receive_messages(void *arg);
+void* receive_messages(void* serverSocket);
 
 int main(void) {
-	pthread_t thread1;
-	char* ip = "127.0.0.1";
+
 	WSADATA wsa;
-	WSAStartup(MAKEWORD(2, 0), &wsa);
+	WSAStartup(MAKEWORD(2, 2), &wsa);
+	pthread_t thread1;
+	char* serverIp;
 
-	struct sockaddr_in *serverAddress = generate_IPv4_Address(ip, PORT);
+	printf("Insert the server's IP?");
+	scanf("%s", serverIp);
 
-	int socketFileDescriptor = initialize_Socket_IPv4();
+	SOCKET server = initialize_Socket_IPv4();
 
-	int connection = connect(socketFileDescriptor, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+	struct sockaddr_in server_address = generate_IPv4_Address(serverIp, PORT);
 
-	if (connection == 0)
-		printf("Connection was successful!\n");
-	else
-		printf("Connection error!\n");
+	/*short int checkPort = checkPort5000();
+	if (checkPort) {
+		Sleep(2000);
+		return 1;
+	}*/
+
+	int connectionResult = connect(server, (struct sockaddr*)&server_address, sizeof(server_address));
+	switch (connectionResult) {
+	case SOCKET_ERROR:
+		wprintf(L"Failed to Connect to the server %ld\n", WSAGetLastError());
+		closesocket(server);
+		WSACleanup();
+		return 1;
+	default:
+		wprintf(L"Connected\n");
+		break;
+	}
 
 	pthread_mutex_init(&print_mutex, NULL);
-	pthread_create(&thread1, NULL, receive_messages, &socketFileDescriptor);
-	
-	while(1){
-		printf("> ");
-		scanf("%[^\n]s", message);
-		send(socketFileDescriptor, message, strlen(message), 0);
+	pthread_create(&thread1, NULL, *receive_messages, (void *)&server);
+
+	char message[MAX_MSG_SIZE] = { 0 };
+	while(1) {
+
+		memset(message, 0, sizeof(message));
+		pthread_mutex_lock(&print_mutex);
+		printf("Write your message: ");
+		scanf("%s", message);
+		pthread_mutex_unlock(&print_mutex);
+		encrypt(message);
+		send(server, message, MAX_MSG_SIZE, 0);
+
 	}
-	
-	closesocket(socketFileDescriptor);
-	
+
+	printf("Bye!\n");
+	Sleep(2000);
+
+	closesocket(server);
 	pthread_join(thread1, NULL);
-	
+	WSACleanup();
+
 	return 0;
 }
 
-
-void *receive_messages(void *arg){
-    SOCKET *socketFileDescriptor = (SOCKET *)arg;
-	buff[bytes_read] = '\0';
-	while((bytes_read = recv(*socketFileDescriptor, buff, sizeof(buff), 0)) > 0){
-		encrypt(buff);
+void* receive_messages(void* serverSocket) {
+	buff[buff_bytes] = '\0';
+	SOCKET* server = (SOCKET*)serverSocket;
+	while ((buff_bytes = recv(*server, buff, sizeof(buff), 0)) > 0) {
 		pthread_mutex_lock(&print_mutex);
-		printf("Received: %s\n", buff);
+		encrypt(buff);
+		wprintf(L"Received: %s\n", buff);
 		fflush(stdout);
 		pthread_mutex_unlock(&print_mutex);
 	}
