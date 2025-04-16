@@ -63,8 +63,8 @@ int main(void) {
 	printf("Bye!\n");
 	Sleep(2000);
 
-	closesocket(server);
 	pthread_join(thread1, NULL);
+	closesocket(server);
 	WSACleanup();
 
 	return 0;
