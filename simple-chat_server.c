@@ -1,61 +1,57 @@
 #include "simple-chat_functions.h"
-#include "simple-chat_tweaks.h"
 
-void *receive_messages(void *arg);
+void* receive_messages(void* clientSocket);
 
 char buff[MAX_MSG_SIZE];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 int bytes_read = 0;
 
-int main(void){
-	pthread_t thread1;
+
+int main(void) {
+
 	WSADATA wsa;
-	WSAStartup(MAKEWORD(2, 0), &wsa);
+	WSAStartup(MAKEWORD(2, 2), &wsa);
+	pthread_t thread1;
 
-	int serverFD = initialize_Socket_IPv4();
-	struct sockaddr_in clientAddress;
-	struct sockaddr_in *serverAddress = generate_IPv4_Address("", PORT);
+	SOCKET server = initialize_Socket_IPv4();
 
-	int clientFD, x;
-	int result = bind(serverFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+	struct sockaddr_in serverAddress = generate_IPv4_Address("", PORT);
 
-	if (result == 0)
-		printf("Socket was bound successfuly!\n");
-	else
-		printf("Binding error!\n");
+	bind(server, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
 
-	int listenResult = listen(serverFD, 5);
+	int checkIP = getWirelessIP();
+	if (checkIP) {
+		Sleep(2000);
+		return 1;
+	}
 
-	if (listenResult == 0)
-		printf("Socket is listening!\n");
-	else
-		printf("Listening error!\n");
+	listen(server, 5);
 
-	int client_size = sizeof(clientAddress);
-	clientFD = accept(serverFD, (struct sockaddr*) &clientAddress, &client_size);
-	
+	SOCKET client = accept(server, NULL, NULL);
+
 	pthread_mutex_init(&print_mutex, NULL);
-	pthread_create(&thread1, NULL, receive_messages, &clientFD);
-	
-	closesocket(clientFD);
-	
-	pthread_join(thread1, NULL);
-	
+	pthread_create(&thread1, NULL, receive_messages, (void*) &client);
+
+	pthread_join(&thread1, NULL);
+
+	closesocket(client);
+	closesocket(server);
+
+	WSACleanup();
+
 	return 0;
 }
 
-void *receive_messages(void *arg){
-	SOCKET *clientFD = (SOCKET *)arg;
+void* receive_messages(void* clientSocket) {
+	SOCKET* client = (SOCKET*)clientSocket;
 	buff[bytes_read] = '\0';
-	while((bytes_read = recv(*clientFD, buff, sizeof(buff), 0)) > 0){
+	while ((bytes_read = recv(*client, buff, MAX_MSG_SIZE, 0)) > 0) {
 		pthread_mutex_lock(&print_mutex);
 		printf("Message: %s\n", buff);
 		fflush(stdout);
 		pthread_mutex_unlock(&print_mutex);
 
-		encrypt(buff);
-		send(*clientFD, buff, bytes_read, 0);
+		send(*client, buff, bytes_read, 0);
 	}
 	return NULL;
 }
-
