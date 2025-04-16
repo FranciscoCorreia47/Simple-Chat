@@ -51,7 +51,6 @@ void* receive_messages(void* clientSocket) {
 		fflush(stdout);
 		pthread_mutex_unlock(&print_mutex);
 
-		encrypt(buff);
 		send(*client, buff, bytes_read, 0);
 	}
 	return NULL;
