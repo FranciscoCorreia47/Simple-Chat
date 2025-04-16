@@ -12,7 +12,12 @@ int main(void) {
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 	pthread_t thread1;
 	char* serverIp;
-
+	char username[30];
+	
+	printf("Insira o seu nome de utilizador:\n> ");
+	scanf("%[^\n]", nome);
+	short int message_size = MAX_MSG_SIZE + strlen(username) + 2;
+	
 	printf("Insert the server's IP?");
 	scanf("%s", serverIp);
 
@@ -50,7 +55,8 @@ int main(void) {
 		scanf("%[^\n]", message);
 		pthread_mutex_unlock(&print_mutex);
 		encrypt(message);
-		send(server, message, MAX_MSG_SIZE, 0);
+		strcpy(message, concat(message, username));
+		send(server, final_message, message_size, 0);
 
 	}
 
@@ -64,13 +70,15 @@ int main(void) {
 	return 0;
 }
 
-void* receive_messages(void* serverSocket) {
+void* receive_messages(void* serverSocket, void*  message_size) {
 	buff[buff_bytes] = '\0';
 	SOCKET* server = (SOCKET*)serverSocket;
-	while ((buff_bytes = recv(*server, buff, sizeof(buff), 0)) > 0) {
+	short int*  msg =  (short int*)message_size; 
+	
+	while ((buff_bytes = recv(*server, buff, *msg, 0)) > 0) {
 		pthread_mutex_lock(&print_mutex);
 		encrypt(buff);
-		wprintf(L"Received: %s\n", buff);
+		wprintf(L"%s\n", buff);
 		fflush(stdout);
 		pthread_mutex_unlock(&print_mutex);
 	}
