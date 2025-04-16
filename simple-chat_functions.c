@@ -87,8 +87,18 @@ int getWirelessIP() {
     pclose(fp);
 }
 
+char *concat(char message[512], char username[30]){
+	char *final_message;
+	strcat(*final_message, username);
+	strcat(*final_message, "> ");
+	strcat(*final_message, message);
+
+	return *final_message;
+}
+
+
 void encrypt(char text[512]) {
-    char key[6] = "X̌₽æþ¤";
+    char key[12] = "X̌₽æþ¤";
     for (int i = 0; i < strlen(text); i++) {
         text[i] = text[i] ^ key[i % strlen(key)];
     }
