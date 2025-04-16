@@ -32,7 +32,7 @@ int main(void) {
 	pthread_mutex_init(&print_mutex, NULL);
 	pthread_create(&thread1, NULL, receive_messages, (void*) &client);
 
-	pthread_join(&thread1, NULL);
+	pthread_join(thread1, NULL);
 
 	closesocket(client);
 	closesocket(server);
