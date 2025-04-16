@@ -47,7 +47,7 @@ int main(void) {
 		memset(message, 0, sizeof(message));
 		pthread_mutex_lock(&print_mutex);
 		printf("Write your message: ");
-		scanf("%s", message);
+		scanf("%[^\n]", message);
 		pthread_mutex_unlock(&print_mutex);
 		encrypt(message);
 		send(server, message, MAX_MSG_SIZE, 0);
