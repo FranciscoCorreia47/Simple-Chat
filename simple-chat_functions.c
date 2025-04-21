@@ -1,13 +1,19 @@
 #include "simple-chat_functions.h"
 
 
-//This function initializes a IPv4 Socket
+//This function initializes a IPv4 Socket on the operating system, to allow the app to use network resources
 SOCKET initialize_Socket_IPv4() {
-	
+
+	// Returns the socket structure 
 	return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	/*		^	    ^		^
+ 		        |	    |		|
+	   	IPv4 Address mode   |		|
+     			  Tells the OS the message type is TCP
+  	*/
 }
 
-//This function generates an IPv4 address allocated in the heap
+//This function generates an IPv4 address in network notation
 struct sockaddr_in generate_IPv4_Address(char* ip, int port) {
 	
 	//Generating the address based on the inputed IP and the specified port
@@ -15,26 +21,30 @@ struct sockaddr_in generate_IPv4_Address(char* ip, int port) {
 	address.sin_family = AF_INET;
 	address.sin_port = htons(port);
 
-	//Handling null IP's so that they become loopback
+	//Handling null IP's
 	if (strlen(ip) == 0)
-		address.sin_addr.s_addr = INADDR_ANY; //INADDR_ANY means any IP
+		//INADDR_ANY is a wildcard that means that we will bind to all/any IP address that the local computer currently has
+		address.sin_addr.s_addr = INADDR_ANY;
 	else
-		inet_pton(AF_INET, ip, &address.sin_addr); //If whe actually have an IP, transform it to the network presentation form
+		//If an IP was parsed, transform it to the network presentation form
+		inet_pton(AF_INET, ip, &address.sin_addr);
 
+	// Return the created network IPv4 address structure
 	return address;
 }
 
+// This function's purpose is to tell the clients which IPv4 addresses in the local network have the port used in the app (5000) open
 int checkPort5000() {
     FILE* fp;
     char buffer[MAX_MSG_SIZE];
 
-    // Run netstat and open a pipe to read the output
+    // Run netstat and open a pipe to read the output as a file
     fp = popen("netstat -an", "r");
-    if (fp == NULL) {
+    if (fp == NULL)
+	// If the command does not work, print error and continue program, as client should usually be told the server's IP address
         perror("Can't check open ports");
-        return 1;
-    }
 
+    // Display all IP's
     printf("IPs with port 5000 open:\n");
 
     while (fgets(buffer, MAX_MSG_SIZE, fp) != NULL) {
@@ -55,6 +65,7 @@ int checkPort5000() {
     return 0;
 }
 
+// Tells the server what is it's current IP
 int getWirelessIP() {
     FILE* fp;
     char buffer[MAX_MSG_SIZE];
@@ -63,7 +74,8 @@ int getWirelessIP() {
     // Run ipconfig and open a pipe to read the output
     fp = popen("ipconfig", "r");
     if (fp == NULL) {
-        perror("Can't check IP");
+        // Here we print error and return 1 because if the server does not know it's own IP, it can't tell clients so that they connect
+	perror("Can't check IP");
         return 1;
     }
 
@@ -83,10 +95,10 @@ int getWirelessIP() {
             break; // Stop searching after finding the IP
         }
     }
-
     pclose(fp);
 }
 
+// Concatenates the user's name and the message, to ease sending to server and printing on other clients/broadcasting
 char *concat(char message[512], char username[30]){
 	char *final_message;
 	strcat(*final_message, username);
@@ -96,7 +108,7 @@ char *concat(char message[512], char username[30]){
 	return *final_message;
 }
 
-
+// Encripts messages using XOR decryption
 void encrypt(char text[512]) {
     char key[12] = "X̌₽æþ¤";
     for (int i = 0; i < strlen(text); i++) {
