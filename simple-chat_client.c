@@ -1,20 +1,27 @@
 #include "simple-chat_functions.h"
 
-char buff[MAX_MSG_SIZE];
-int buff_bytes = 0;
+char 		buff[MAX_MSG_SIZE];
+int 		buff_bytes  = 0;
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* receive_messages(void* serverSocket);
 
+//Struct that holds two variables that will be used as arguments in the function 'receive_messages' 
+typedef struct {
+	short int message_size;
+	SOCKET 	  server;
+} thread_args;
+
 int main(void) {
 
-	//Inicializes the the Windows sockets API
+	//Initializes the the Windows sockets API
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
-	
-	pthread_t thread1;
-	char* serverIp;
-	char username[30];
+
+	thread_args message_info;
+	pthread_t   thread1;
+	char* 	    serverIp;
+	char 	    username[30];
 
 	//Gets the username the will be displayed, from the client
 	printf("Insira o seu nome de utilizador:\n> ");
@@ -25,7 +32,7 @@ int main(void) {
 	scanf("%s", serverIp);
 
 	//Creates the server socket
-	SOCKET server = initialize_Socket_IPv4();
+	message_info.server = initialize_Socket_IPv4();
 
 	struct sockaddr_in server_address = generate_IPv4_Address(serverIp, PORT);
 
@@ -52,7 +59,7 @@ int main(void) {
 
 	//Creates a second thread to process the receiving of messages
 	pthread_mutex_init(&print_mutex, NULL);
-	pthread_create(&thread1, NULL, *receive_messages, (void *)&server);
+	pthread_create(&thread1, NULL, *receive_messages, (void *)message_info);
 
 	char message[MAX_MSG_SIZE] = { 0 };
 
@@ -73,17 +80,23 @@ int main(void) {
 	printf("Bye!\n");
 	Sleep(2000);
 
+	// Joining the thread so that the program waits until there is no traffic to close
 	pthread_join(thread1, NULL);
+
+	// Closing the server socket
 	closesocket(server);
+
+	// Windows Socket API function that cleans the socket usage and other resources, to avoid safety issues
 	WSACleanup();
 
 	return 0;
 }
-//Funtion that receives the messages from the server, desencrypts them and prints them in the screen
-void* receive_messages(void* serverSocket, void*  message_size) {
+
+// The void function used on the thread
+//Funtion that receives the messages from the server, decrypts them and prints them in the screen
+void* receive_messages(void* message_info) {
 	buff[buff_bytes] = '\0';
-	SOCKET* server = (SOCKET*)serverSocket;
-	short int*  msg =  (short int*)message_size; 
+	message info = (thread_args *)message_info;
 	
 	while ((buff_bytes = recv(*server, buff, *msg, 0)) > 0) {
 		pthread_mutex_lock(&print_mutex);
