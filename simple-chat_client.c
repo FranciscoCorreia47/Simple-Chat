@@ -8,12 +8,15 @@ void* receive_messages(void* serverSocket);
 
 int main(void) {
 
+	//Inicializes the the Windows sockets API
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
+	
 	pthread_t thread1;
 	char* serverIp;
 	char username[30];
-	
+
+	//Gets the username the will be displayed, from the client
 	printf("Insira o seu nome de utilizador:\n> ");
 	scanf("%[^\n]", nome);
 	short int message_size = MAX_MSG_SIZE + strlen(username) + 2;
@@ -21,6 +24,7 @@ int main(void) {
 	printf("Insert the server's IP?");
 	scanf("%s", serverIp);
 
+	//Creates the server socket
 	SOCKET server = initialize_Socket_IPv4();
 
 	struct sockaddr_in server_address = generate_IPv4_Address(serverIp, PORT);
@@ -31,7 +35,10 @@ int main(void) {
 		return 1;
 	}*/
 
+	//Connects the socket with the the address and port given 
 	int connectionResult = connect(server, (struct sockaddr*)&server_address, sizeof(server_address));
+
+	//Verifies if the connection was successful or not
 	switch (connectionResult) {
 	case SOCKET_ERROR:
 		wprintf(L"Failed to Connect to the server %ld\n", WSAGetLastError());
@@ -43,10 +50,13 @@ int main(void) {
 		break;
 	}
 
+	//Creates a second thread to process the receiving of messages
 	pthread_mutex_init(&print_mutex, NULL);
 	pthread_create(&thread1, NULL, *receive_messages, (void *)&server);
 
 	char message[MAX_MSG_SIZE] = { 0 };
+
+	//This loop gets the message from the client, encrypts it and send it to the server
 	while(1) {
 
 		memset(message, 0, sizeof(message));
@@ -69,7 +79,7 @@ int main(void) {
 
 	return 0;
 }
-
+//Funtion that receives the messages from the server, desencrypts them and prints them in the screen
 void* receive_messages(void* serverSocket, void*  message_size) {
 	buff[buff_bytes] = '\0';
 	SOCKET* server = (SOCKET*)serverSocket;
