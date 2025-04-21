@@ -1,3 +1,5 @@
+//Function that encrypts the message from the client before sending it, using XOR
 void encrypt(char text[512]);
 
+//Function that put together the username chosen by the client and the message that will be sent
 void concat(char message[512], char username[30]);
