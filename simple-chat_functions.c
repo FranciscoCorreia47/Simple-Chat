@@ -1,7 +1,7 @@
 #include "simple-chat_functions.h"
 
 
-//This function initializes a IPv4 Socket on the operating system, to allow the app to use network resources
+// This function initializes a IPv4 Socket on the operating system, to allow the app to use network resources
 SOCKET initialize_Socket_IPv4() {
 
 	// Returns the socket structure 
@@ -13,20 +13,20 @@ SOCKET initialize_Socket_IPv4() {
   	*/
 }
 
-//This function generates an IPv4 address in network notation
+// This function generates an IPv4 address in network notation
 struct sockaddr_in generate_IPv4_Address(char* ip, int port) {
 	
-	//Generating the address based on the inputed IP and the specified port
+	// Generating the address based on the inputed IP and the specified port
 	struct sockaddr_in address;
 	address.sin_family = AF_INET;
 	address.sin_port = htons(port);
 
-	//Handling null IP's
+	// Handling null IP's
 	if (strlen(ip) == 0)
-		//INADDR_ANY is a wildcard that means that we will bind to all/any IP address that the local computer currently has
+		// INADDR_ANY is a wildcard that means that we will bind to all/any IP address that the local computer currently has
 		address.sin_addr.s_addr = INADDR_ANY;
 	else
-		//If an IP was parsed, transform it to the network presentation form
+		// If an IP was parsed, transform it to the network presentation form
 		inet_pton(AF_INET, ip, &address.sin_addr);
 
 	// Return the created network IPv4 address structure
@@ -105,6 +105,7 @@ char *concat(char message[512], char username[30]){
 	strcat(*final_message, "> ");
 	strcat(*final_message, message);
 
+	// Output should look like: "username> The message that the user inputed"
 	return *final_message;
 }
 
