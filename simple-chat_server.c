@@ -2,9 +2,9 @@
 
 void* receive_messages(void* clientSocket);
 
-char buff[MAX_MSG_SIZE];
+char 		buff[MAX_MSG_SIZE];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
-int bytes_read = 0;
+int 		bytes_read = 0;
 
 
 int main(void) {
