@@ -1,6 +1,6 @@
 #include "simple-chat_functions.h"
 
-void* receive_messages(void* clientSocket);
+void* forward_messages(void* clientSocket);
 
 char 		buff[MAX_MSG_SIZE];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -40,7 +40,7 @@ int main(void) {
 
 	// Creating the thread to receive and send messages while receiving new connections
 	pthread_mutex_init(&print_mutex, NULL);
-	pthread_create(&thread1, NULL, receive_messages, (void*) &client);
+	pthread_create(&thread1, NULL, forward_messages, (void*) &client);
 
 	// Joining the thread so that the program waits until there is no traffic to close
 	pthread_join(thread1, NULL);
