@@ -59,10 +59,10 @@ int main(void) {
 // This function receives the client socket parsed as a void*, and then typecasted back to a SOCKET*
 void* forward_messages(void* clientSocket) {
 	SOCKET* client = (SOCKET*)clientSocket;
-	buff[bytes_read] = '\0';
 	
 	// Forwards messages until no message was received
 	while ((bytes_read = recv(*client, buff, MAX_MSG_SIZE, 0)) > 0) {
+		buff[bytes_read] = '\0';
 		send(*client, buff, bytes_read, 0);
 	}
 	return NULL;
