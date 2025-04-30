@@ -12,7 +12,6 @@ int main(void) {
 	// Initializes the Windows Socket API
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
-
 	pthread_t thread1;
 
 	// Initializing the Server Socket
