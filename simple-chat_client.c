@@ -46,8 +46,18 @@ int main(void) {
 
 		memset(message, 0, sizeof(message));
 		pthread_mutex_lock(&print_mutex);
+		
+		flush_input();
+
 		printf("Write your message: ");
-		scanf("%s", message);
+
+		if (fgets(message, MAX_MSG_SIZE, stdin)) {
+		  // Strip newline if present
+		  size_t len = strlen(message);
+		  if (len > 0 && message[len - 1] == '\n') {
+		    message[len - 1] = '\0';
+		  }
+		}
 		pthread_mutex_unlock(&print_mutex);
 		if (strcmp(message, "/exit") == 0) {
 			send(server, message, MAX_MSG_SIZE, 0);
