@@ -38,12 +38,23 @@ int main(void) {
 	// Accepting incoming client
 	SOCKET client = accept(server, NULL, NULL);
 
+	
+	while (1) {
+		memset(buff, 0, sizeof(buff));
+		bytes_read = recv(client, buff, MAX_MSG_SIZE, 0);
+		printf("Bytes read: %d", bytes_read);
+		if (strcmp(buff, "/exit") == 0)
+			break;
+		buff[bytes_read] = '\0';
+		send(client, buff, sizeof(buff), 0);
+	}
+	
 	// Creating the thread to receive and send messages while receiving new connections
-	pthread_mutex_init(&print_mutex, NULL);
-	pthread_create(&thread1, NULL, forward_messages, (void*) &client);
+	//pthread_mutex_init(&print_mutex, NULL);
+	//pthread_create(&thread1, NULL, forward_messages, (void*)&client);
 
 	// Joining the thread so that the program waits until there is no traffic to close
-	pthread_join(thread1, NULL);
+	//pthread_join(thread1, NULL);
 
 	// Closing both sockets
 	closesocket(client);
@@ -57,13 +68,17 @@ int main(void) {
 
 // The void function used on the thread
 // This function receives the client socket parsed as a void*, and then typecasted back to a SOCKET*
-void* forward_messages(void* clientSocket) {
+/*void* forward_messages(void* clientSocket) {
 	SOCKET* client = (SOCKET*)clientSocket;
-	
+
 	// Forwards messages until no message was received
-	while ((bytes_read = recv(*client, buff, MAX_MSG_SIZE, 0)) > 0) {
+	while(1){
+		bytes_read = recv(*client, buff, MAX_MSG_SIZE, 0);
+
+		if (strcmp(buff, "/exit"))
+			break;
 		buff[bytes_read] = '\0';
 		send(*client, buff, bytes_read, 0);
 	}
 	return NULL;
-}
+}*/
