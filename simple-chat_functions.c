@@ -4,33 +4,33 @@
 // This function initializes a IPv4 Socket on the operating system, to allow the app to use network resources
 SOCKET initialize_Socket_IPv4() {
 
-	// Returns the socket structure 
-	return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	/*		^	    ^		^
- 		        |	    |		|
-	   	IPv4 Address mode   |		|
-     			  Tells the OS the message type is TCP
-  	*/
+    // Returns the socket structure 
+    return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    /*		          ^	        ^		    ^
+                      |         |		    |
+        IPv4 Address mode       |		    |
+                  Tells the OS the message type is TCP
+    */
 }
 
 // This function generates an IPv4 address in network notation
 struct sockaddr_in generate_IPv4_Address(char* ip, int port) {
-	
-	// Generating the address based on the inputed IP and the specified port
-	struct sockaddr_in address;
-	address.sin_family = AF_INET;
-	address.sin_port = htons(port);
 
-	// Handling null IP's
-	if (strlen(ip) == 0)
-		// INADDR_ANY is a wildcard that means that we will bind to all/any IP address that the local computer currently has
-		address.sin_addr.s_addr = INADDR_ANY;
-	else
-		// If an IP was parsed, transform it to the network presentation form
-		inet_pton(AF_INET, ip, &address.sin_addr);
+    // Generating the address based on the inputed IP and the specified port
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_port = htons(port);
 
-	// Return the created network IPv4 address structure
-	return address;
+    // Handling null IP's
+    if (strlen(ip) == 0)
+        // INADDR_ANY is a wildcard that means that we will bind to all/any IP address that the local computer currently has
+        address.sin_addr.s_addr = INADDR_ANY;
+    else
+        // If an IP was parsed, transform it to the network presentation form
+        inet_pton(AF_INET, ip, &address.sin_addr);
+
+    // Return the created network IPv4 address structure
+    return address;
 }
 
 // This function's purpose is to tell the clients which IPv4 addresses in the local network have the port used in the app (5000) open
@@ -41,7 +41,7 @@ int checkPort5000() {
     // Run netstat and open a pipe to read the output as a file
     fp = popen("netstat -an", "r");
     if (fp == NULL)
-	// If the command does not work, print error and continue program, as client should usually be told the server's IP address
+        // If the command does not work, print error and continue program, as client should usually be told the server's IP address
         perror("Can't check open ports");
 
     // Display all IP's
@@ -75,7 +75,7 @@ int getWirelessIP() {
     fp = popen("ipconfig", "r");
     if (fp == NULL) {
         // Here we print error and return 1 because if the server does not know it's own IP, it can't tell clients so that they connect
-	perror("Can't check IP");
+        perror("Can't check IP");
         return 1;
     }
 
@@ -99,14 +99,14 @@ int getWirelessIP() {
 }
 
 // Concatenates the user's name and the message, to ease sending to server and printing on other clients/broadcasting
-char *concat(char message[512], char username[30]){
-	char *final_message;
-	strcat(*final_message, username);
-	strcat(*final_message, "> ");
-	strcat(*final_message, message);
+char* concat(char message[512], char username[30]) {
+    char* final_message;
+    strcat(final_message, username);
+    strcat(final_message, "> ");
+    strcat(final_message, message);
 
-	// Output should look like: "username> The message that the user inputed"
-	return *final_message;
+    // Output should look like: "username> The message that the user inputed"
+    return final_message;
 }
 
 // Encripts messages using XOR decryption
