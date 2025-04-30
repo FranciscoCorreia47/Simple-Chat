@@ -2,7 +2,6 @@
 #define UNICODE
 #endif
 
-
 #include <WinSock2.h>
 #include <stdio.h>
 #include <stdlib.h>
