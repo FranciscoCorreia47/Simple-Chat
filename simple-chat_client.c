@@ -24,6 +24,7 @@ int main(void) {
 	if (checkPort) {
 		Sleep(2000);
 		return 1;
+  
 	}*/
 
 	int connectionResult = connect(server, (struct sockaddr*)&server_address, sizeof(server_address));
