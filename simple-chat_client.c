@@ -58,13 +58,17 @@ int main(void) {
 		    message[len - 1] = '\0';
 		  }
 		}
+
+		fflush(stdout);
+		
 		pthread_mutex_unlock(&print_mutex);
+		
 		if (strcmp(message, "/exit") == 0) {
 			send(server, message, MAX_MSG_SIZE, 0);
 			break;
 		}
 		else {
-			//encrypt(message);
+			encrypt(message);
 			send(server, message, sizeof(message), 0);
 		}
 		Sleep(500);
@@ -91,7 +95,7 @@ void* receive_messages(void* serverSocket) {
 			break;
 		
 		pthread_mutex_lock(&print_mutex);
-		//encrypt(buff);
+		encrypt(buff);
 		printf("Received: %s\n", buff);
 		fflush(stdout);
 		pthread_mutex_unlock(&print_mutex);
