@@ -1,6 +1,5 @@
 #include "simple-chat_functions.h"
 
-
 // This function initializes a IPv4 Socket on the operating system, to allow the app to use network resources
 SOCKET initialize_Socket_IPv4() {
 
