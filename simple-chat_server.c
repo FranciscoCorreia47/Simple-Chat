@@ -2,18 +2,17 @@
 
 void* forward_messages(void* clientSocket);
 
-char 		buff[MAX_MSG_SIZE];
+char 		buff[5][MAX_MSG_SIZE];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 int 		bytes_read = 0;
 
 
 int main(void) {
-
 	// Initializes the Windows Socket API
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 	pthread_t thread1;
-
+	pth
 	// Initializing the Server Socket
 	SOCKET server = initialize_Socket_IPv4();
 
@@ -33,19 +32,26 @@ int main(void) {
 
 	// Start listening for new connections
 	listen(server, 5);
-
+	
 	// Accepting incoming client
-	SOCKET client = accept(server, NULL, NULL);
+	SOCKET client[5];
 
+	while(1){
+		for(i = 0; i < 5; i++){
+			client[1] = accept(server, NULL, NULL);
+		}
+	}
 	
 	while (1) {
 		memset(buff, 0, sizeof(buff));
-		bytes_read = recv(client, buff, MAX_MSG_SIZE, 0);
-		printf("Bytes read: %d", bytes_read);
-		if (strcmp(buff, "/exit") == 0)
-			break;
-		buff[bytes_read] = '\0';
-		send(client, buff, sizeof(buff), 0);
+		for(int i = 0; i < 5; i++){
+			bytes_read = recv(client[i], buff[i], MAX_MSG_SIZE, 0);
+			printf("Bytes read: %d", bytes_read);
+			if (strcmp(buff[i], "/exit") == 0)
+				break;
+			buff[i][bytes_read] = '\0';
+			send(client, buff[i], sizeof(buff[i]), 0);
+		}
 	}
 	
 	// Creating the thread to receive and send messages while receiving new connections
