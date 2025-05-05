@@ -45,7 +45,7 @@ int main(void) {
 
 	// Creating the thread to receive and send messages while receiving new connections
 	//pthread_mutex_init(&print_mutex, NULL);
-	pthread_create(&thread1, NULL, forward_messages, (void*)&client);
+	pthread_create(&thread1, NULL, (void*)forward_messages, (void*)&client);
 
 	// Joining the thread so that the program waits until there is no traffic to close
 	pthread_join(thread1, NULL);
