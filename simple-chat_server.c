@@ -36,7 +36,7 @@ int main(void) {
 	// Accepting incoming client
 	SOCKET client[5];
 
-	while(1){
+	while(){
 		for(i = 0; i < 5; i++){
 			client[1] = accept(server, NULL, NULL);
 		}
