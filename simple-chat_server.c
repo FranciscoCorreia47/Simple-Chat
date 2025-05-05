@@ -1,6 +1,6 @@
 #include "simple-chat_functions.h"
 
-void* forward_messages(void* clientSocket);
+void* forward_messages(void* clientSocket[5]);
 
 char 		buff[5][MAX_MSG_SIZE];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -12,7 +12,6 @@ int main(void) {
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 	pthread_t thread1;
-	pth
 	// Initializing the Server Socket
 	SOCKET server = initialize_Socket_IPv4();
 
@@ -38,7 +37,7 @@ int main(void) {
 
 	int count = 0;
 	while(count < 5){
-		for(i = 0; i < 5; i++){
+		for(int i = 0; i < 5; i++){
 			client[1] = accept(server, NULL, NULL);
 			count++;
 		}
@@ -52,7 +51,10 @@ int main(void) {
 	pthread_join(thread1, NULL);
 
 	// Closing both sockets
-	closesocket(client);
+	for(int i = 0; i < 5; i++)
+		closesocket(client[i]);
+	}
+
 	closesocket(server);
 
 	// Windows Socket API function that cleans the socket usage and other resources, to avoid safety issues
@@ -75,7 +77,7 @@ void* forward_messages(void* clientSocket[5]) {
 			if (strcmp(buff[i], "/exit") == 0)
 				break;
 			buff[i][bytes_read] = '\0';
-			send(client, buff[i], sizeof(buff[i]), 0);
+			send(client[i], buff[i], sizeof(buff[i]), 0);
 		}
 	}
 	return NULL;
