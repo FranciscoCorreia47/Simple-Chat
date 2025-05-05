@@ -36,12 +36,14 @@ int main(void) {
 	// Accepting incoming client
 	SOCKET client[5];
 
-	while(){
+	int count = 0;
+	while(count < 5){
 		for(i = 0; i < 5; i++){
 			client[1] = accept(server, NULL, NULL);
+			count++;
 		}
 	}
-	
+
 	while (1) {
 		memset(buff, 0, sizeof(buff));
 		for(int i = 0; i < 5; i++){
