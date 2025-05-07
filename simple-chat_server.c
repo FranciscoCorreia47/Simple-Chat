@@ -1,6 +1,6 @@
 #include "simple-chat_functions.h"
 
-void* forward_messages(void* clientSocket[5]);
+void* forward_messages(void* clientSocket);
 
 char 		buff[5][MAX_MSG_SIZE];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -38,7 +38,7 @@ int main(void) {
 	int count = 0;
 	while(count < 5){
 		for(int i = 0; i < 5; i++){
-			client[1] = accept(server, NULL, NULL);
+			client[i] = accept(server, NULL, NULL);
 			count++;
 		}
 	}
@@ -51,7 +51,7 @@ int main(void) {
 	pthread_join(thread1, NULL);
 
 	// Closing both sockets
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 5; i++){
 		closesocket(client[i]);
 	}
 
@@ -65,19 +65,19 @@ int main(void) {
 
 // The void function used on the thread
 // This function receives the client socket parsed as a void*, and then typecasted back to a SOCKET*
-void* forward_messages(void* clientSocket[5]) {
-	SOCKET* client[5] = (SOCKET*)clientSocket[5];
-
+void* forward_messages(void* clientSocket) {
+	SOCKET* client = (SOCKET*)clientSocket;
+	
 	// Forwards messages until no message was received
 	while (1) {
 		memset(buff, 0, sizeof(buff));
 		for(int i = 0; i < 5; i++){
 			bytes_read = recv(client[i], buff[i], MAX_MSG_SIZE, 0);
 			printf("Bytes read: %d", bytes_read);
-			if (strcmp(buff[i], "/exit") == 0)
-				break;
 			buff[i][bytes_read] = '\0';
-			send(client[i], buff[i], sizeof(buff[i]), 0);
+			if (strcmp(buff[i], "/exit") == 0)
+				return NULL;
+			send(client[i], buff[i], bytes_read, 0);
 		}
 	}
 	return NULL;
