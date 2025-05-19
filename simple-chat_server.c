@@ -3,9 +3,8 @@
 void* forward_messages(void* clientSocket);
 
 char 		buff[5][MAX_MSG_SIZE];
-pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 int 		bytes_read = 0;
-
+pthread_mutex_t accept_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(void) {
 	// Initializes the Windows Socket API
@@ -31,53 +30,69 @@ int main(void) {
 
 	// Start listening for new connections
 	listen(server, 5);
-	
-	// Accepting incoming client
-	SOCKET client[5];
 
+	// Initializa sockets as -1 to avoid using memory trash
+	SOCKET client[5] = {-1, -1, -1, -1, -1};
+
+	// Creating the thread to receive and send messages while receiving new connections
+	pthread_create(&thread1, NULL, forward_messages, (void*)&client);
+
+
+	// Accept incoming client connections
 	int count = 0;
-	while(count < 5){
-		for(int i = 0; i < 5; i++){
-			client[i] = accept(server, NULL, NULL);
-			count++;
+	while (count < 5) {
+		for (int i = 0; i < 5; i++) {
+			if (client[i] != SOCKET_ERROR)
+				continue;
+			else {
+				pthread_mutex_lock(&accept_mutex);
+				client[i] = accept(server, NULL, NULL);
+				pthread_mutex_unlock(&accept_mutex);
+				printf("Client %d Conected\n", i);
+				count++;
+			}
 		}
 	}
 
-	// Creating the thread to receive and send messages while receiving new connections
-	//pthread_mutex_init(&print_mutex, NULL);
-	pthread_create(&thread1, NULL, (void*)forward_messages, (void*)&client);
 
 	// Joining the thread so that the program waits until there is no traffic to close
 	pthread_join(thread1, NULL);
 
 	// Closing both sockets
-	for(int i = 0; i < 5; i++){
+	for (int i = 0; i < 5; i++)
 		closesocket(client[i]);
-	}
-
+	
 	closesocket(server);
 
 	// Windows Socket API function that cleans the socket usage and other resources, to avoid safety issues
 	WSACleanup();
 
 	return 0;
-}
 
+}
 // The void function used on the thread
 // This function receives the client socket parsed as a void*, and then typecasted back to a SOCKET*
 void* forward_messages(void* clientSocket) {
-	SOCKET* client = (SOCKET*)clientSocket;
 	
+	SOCKET* client[5];
+
+	for (int i = 0; i < 5; i++)
+		client[i] = (SOCKET*)clientSocket+i;
+
 	// Forwards messages until no message was received
 	while (1) {
-		memset(buff, 0, sizeof(buff));
-		for(int i = 0; i < 5; i++){
-			bytes_read = recv(client[i], buff[i], MAX_MSG_SIZE, 0);
-			printf("Bytes read: %d", bytes_read);
-			buff[i][bytes_read] = '\0';
+		for (int i = 0; i < 5; i++) {
+			Sleep(500);
+			memset(buff[i], 0, sizeof(buff));
+			if (*client[i] == SOCKET_ERROR)
+				continue;
+			pthread_mutex_lock(&accept_mutex);
+			bytes_read = recv(*client[i], buff[i], MAX_MSG_SIZE, 0);
 			if (strcmp(buff[i], "/exit") == 0)
-				return NULL;
-			send(client[i], buff[i], bytes_read, 0);
+				break;
+			buff[i][bytes_read] = '\0';
+			send(*client[i], buff[i], sizeof(buff[i]), 0);
+			pthread_mutex_unlock(&accept_mutex);
 		}
 	}
 	return NULL;
