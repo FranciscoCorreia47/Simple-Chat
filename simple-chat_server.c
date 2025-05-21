@@ -3,8 +3,8 @@
 void* forward_messages(void* clientSocket);
 void* receive_messages(void* clientSocket);
 
-char 						buff[5][MAX_MSG_SIZE];
-int 						bytes_read = 0;
+char 			buff[5][MAX_MSG_SIZE];
+int 			bytes_read = 0;
 pthread_mutex_t accept_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(void) {
@@ -50,7 +50,7 @@ int main(void) {
 				pthread_mutex_lock(&accept_mutex);
 				client[i] = accept(server, NULL, NULL);
 				pthread_mutex_unlock(&accept_mutex);
-				printf("Client %d Conected\n", i);
+				printf("Client %d Connected\n", i);
 				count++;
 			}
 		}
@@ -74,11 +74,11 @@ int main(void) {
 }
 // The void function used on the thread
 // This function receives the client socket parsed as a void*, and then typecasted back to a SOCKET*
-void* forward_messages(void* clientSocket) {
+void* receive_messages(void* clientSocket) {
 	
 	SOCKET* client = (SOCKET*)clientSocket;
 
-	// Forwards messages until no message was received
+	// Receives messages until no message was received
 	while (1) {
 		for (int i = 0; i < 5; i++) {
 			Sleep(500);
@@ -88,21 +88,26 @@ void* forward_messages(void* clientSocket) {
 			if (client[i] == SOCKET_ERROR)
 				continue;
 			bytes_read = recv(client[i], buff[i], MAX_MSG_SIZE, 0);
-			if (strcmp(buff[i], "/exit") == 0)
+			if (strcmp(buff[i], "/exit") == 0) {
+				client[i] = SOCKET_ERROR;
+				printf("Client %d Disconnected\n", i);
+				pthread_mutex_unlock(&accept_mutex);
 				break;
+			}
+			printf("Received %d bytes from Client %d\n", bytes_read, i);
 			pthread_mutex_unlock(&accept_mutex);
 		}
 	}
 	return NULL;
 }
 
-void* receive_messages(void* clientSocket) {
+void* forward_messages(void* clientSocket) {
 	
 	SOCKET* client = (SOCKET*)clientSocket;
 	
 	while (1) {
 		for (int i = 0; i < 5; i++) {
-			Sleep(500);
+			Sleep(550);
 			memset(buff[i], 0, sizeof(buff));
 
 			pthread_mutex_lock(&accept_mutex);
