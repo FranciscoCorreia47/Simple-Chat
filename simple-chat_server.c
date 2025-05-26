@@ -7,13 +7,18 @@ char 			buff[5][MAX_MSG_SIZE];
 int 			bytes_read = 0;
 pthread_mutex_t accept_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+typedef struct{
+  SOCKET socket;
+  int buffer;
+}Client;
+
 int main(void) {
 	
 	// Starting up the WinSock API
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 	
-	pthread_t thread1, thread2;
+	pthread_t thread1[5], thread2[5];
 
 	// Initializing the Server Socket
 	SOCKET server = initialize_Socket_IPv4();
@@ -36,22 +41,25 @@ int main(void) {
 	listen(server, 5);
 
 	// Initialize sockets as -1 to avoid using memory trash
-	SOCKET client[5] = {SOCKET_ERROR, SOCKET_ERROR, SOCKET_ERROR, SOCKET_ERROR};
+	Client client[5];
 
 	// Creating the threads to receive and send messages while receiving new connections
 	pthread_create(&thread1, NULL, forward_messages, (void*)&client);
-	pthread_create(&thread2, NULL, receive_messages, (void*)&client);
+	
 
 	// Accept incoming client connections
 	int count = 0;
 	while (count < 5) {
 		for (int i = 0; i < 5; i++) {
+			client[i].socket = SOCKET_ERROR;
+			client[i].buffer = i;
 			if (client[i] != SOCKET_ERROR)
 				continue;
 			else {
 				// Lock to avoid trying to receive/send before even having clients connected
 				pthread_mutex_lock(&accept_mutex);
 				client[i] = accept(server, NULL, NULL);
+				pthread_create(&thread2[i], NULL, receive_messages, (void*)&client[i]);
 				pthread_mutex_unlock(&accept_mutex);
 				printf("Client %d Connected\n", i);
 				count++;
@@ -79,7 +87,7 @@ int main(void) {
 // This function receives the client socket parsed as a void*, and then typecasted back to a SOCKET*
 void* receive_messages(void* clientSocket) {
 	
-	SOCKET* client = (SOCKET*)clientSocket;
+	SOCKET* client.socket = (SOCKET*)clientSocket;
 
 	// Receives messages until no message was received
 	while (1) {
@@ -87,31 +95,32 @@ void* receive_messages(void* clientSocket) {
 			// Sleeping here to avoid trying to send before having clients connected
 			Sleep(500);
 			// Cleaning the buffer to avoid memory trash
-			memset(buff[i], 0, sizeof(buff));
-
+			memset(buff[client->buffer], 0, sizeof(buff));
 			pthread_mutex_lock(&accept_mutex);
 			// Ignore unused clients
-			if (client[i] == SOCKET_ERROR)
+			if (client[i].socket == SOCKET_ERROR)
 				continue;
 			
-			bytes_read = recv(client[i], buff[i], MAX_MSG_SIZE, 0);
+			bytes_read = recv(client[i].socket, client[i].buffer, MAX_MSG_SIZE, 0);
 			
 			// Check for disconnecting client
-			if (strcmp(buff[i], "/exit") == 0) {
-				client[i] = SOCKET_ERROR;
+			if (strcmp(client[i].buffer, "/exit") == 0) {
+				client[i].socket = SOCKET_ERROR;
 				printf("Client %d Disconnected\n", i);
 				pthread_mutex_unlock(&accept_mutex);
 				break;
 			}
 			printf("Received %d bytes from Client %d\n", bytes_read, i);
 			pthread_mutex_unlock(&accept_mutex);
+
 		}
+		forward_messages(&client);
 	}
 	return NULL;
 }
 
 // Sends a message to all the clients
-void* forward_messages(void* clientSocket) {
+void forward_messages(void* clientSocket) {
 	
 	// Making a pointer to the entire array and typecasting it back
 	SOCKET* client = (SOCKET*)clientSocket;
@@ -121,17 +130,17 @@ void* forward_messages(void* clientSocket) {
 			// Sleeping here to avoid trying to send before accepting a client/receiving a message 
 			Sleep(550);
 			// Cleaning the buffer to avoid memory trash
-			memset(buff[i], 0, sizeof(buff));
+			memset(client[i].buffer, 0, sizeof(client[i].buffer));
 
 			// Locking here to avoid receiving at the same position while sending
 			pthread_mutex_lock(&accept_mutex);
 			// Not send to unused clients
-			if (client[i] == SOCKET_ERROR)
+			if (client[i].socket == SOCKET_ERROR)
 				continue;
 
 			if (bytes_read > 0) {
-				buff[i][bytes_read] = '\0';
-				send(client[i], buff[i], bytes_read, 0);
+				client[i].buffer[bytes_read] = '\0';
+				send(client[i].socket, client[i].buffer, bytes_read, 0);
 			}
 			pthread_mutex_unlock(&accept_mutex);
 		}
