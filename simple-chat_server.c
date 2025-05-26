@@ -83,7 +83,7 @@ void* receive_messages(void* clientStruct) {
 			// Sleeping here to avoid trying to send before having clients connected
 			Sleep(500);
 			// Cleaning the buffer to avoid memory trash
-			memset(buff[client->buffer], 0, sizeof(buff));
+			memset(buff[client->buffer], 0, MAX_MSG_SIZE));
 			pthread_mutex_lock(&accept_mutex);
 			// Ignore unused clients
 			if (client->socket == SOCKET_ERROR)
@@ -112,15 +112,15 @@ void forward_messages(Client* client){
 	for (int i = 0; i < 5; i++) {
 		// Sleeping here to avoid trying to send before accepting a client/receiving a message 
 		Sleep(550);
-		// Cleaning the buffer to avoid memory trash
-		memset(buff[client->buffer], 0, sizeof(client->buffer));
-
+		
 		// Locking here to avoid receiving at the same position while sending
 		pthread_mutex_lock(&accept_mutex);
 		// Not send to unused clients
-		if (Clients[i].socket == SOCKET_ERROR)
+		if (Clients[i].socket == SOCKET_ERROR){
+			pthread_mutex_unlock(&accept_mutex);
 			continue;
-
+		}
+		
 		if (bytes_read > 0) {
 			buff[client->buffer][bytes_read] = '\0';
 			send(Clients[i].socket, buff[client->buffer], bytes_read, 0);
