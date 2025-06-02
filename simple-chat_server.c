@@ -80,8 +80,7 @@ void* receive_messages(void* clientStruct) {
 
 	// Receives messages until no message was received
 	while (1) {
-			// Sleeping here to avoid trying to send before having clients connected
-			Sleep(200);
+			
 			// Cleaning the buffer to avoid memory trash
 			memset(buff[client->buffer], 0, MAX_MSG_SIZE);
 			pthread_mutex_lock(&accept_mutex);
@@ -110,8 +109,7 @@ void* receive_messages(void* clientStruct) {
 void forward_messages(Client* client){
 
 	for (int i = 0; i < 5; i++) {
-		// Sleeping here to avoid trying to send before accepting a client/receiving a message 
-		Sleep(225);
+		
 		// Cleaning the buffer to avoid memory trash
 		memset(buff[client->buffer], 0, sizeof(client->buffer));
 
