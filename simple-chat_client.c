@@ -102,13 +102,12 @@ void* receive_messages(void* serverSocket) {
 		if (buff_bytes == 0)
 			break;
 
-		buff[buff_bytes] = '\0';
-
 		// Lock here to avoid interrupting message typing by user
 		pthread_mutex_lock(&print_mutex);
 
 		// Decrypt the received message for printing
 		encrypt(buff);
+		buff[buff_bytes] = '\0';
 		printf("Received: %s\n", buff);
 		fflush(stdout);
 		pthread_mutex_unlock(&print_mutex);
