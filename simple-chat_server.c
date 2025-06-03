@@ -50,7 +50,8 @@ int main(void) {
 				Clients[i].socket = accept(server, NULL, NULL);
 				pthread_create(&thread1[i], NULL, receive_messages, (void*)&Clients[i]);
 				pthread_mutex_unlock(&accept_mutex);
-				printf("Client %d Connected\n", i);
+				if (Clients[i].socket == SOCKET_ERROR) break;
+				printf("Client %d Connected\n", i+1);
 				count++;
 			}
 		}
@@ -111,13 +112,12 @@ void forward_messages(Client* client){
 	for (int i = 0; i < 5; i++) {
 		
 		// Cleaning the buffer to avoid memory trash
-		memset(buff[client->buffer], 0, sizeof(client->buffer));
+		memset(buff[client->buffer], 0, MAX_MSG_SIZE);
 
 		// Locking here to avoid receiving at the same position while sending
 		pthread_mutex_lock(&accept_mutex);
 		// Not send to unused clients
-		if (Clients[i].socket == SOCKET_ERROR)
-			continue;
+		if (Clients[i].socket == SOCKET_ERROR) continue;
 
 		if (bytes_read > 0) {
 			buff[client->buffer][bytes_read] = '\0';
