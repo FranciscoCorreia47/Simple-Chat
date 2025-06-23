@@ -103,6 +103,7 @@ void* receive_messages(void* serverSocket) {
 			break;
 
 		// Lock here to avoid interrupting message typing by user
+		Sleep(400);
 		pthread_mutex_lock(&print_mutex);
 
 		// Decrypt the received message for printing
