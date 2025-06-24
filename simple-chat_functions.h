@@ -1,26 +1,30 @@
-#ifndef UNICODE
-#define UNICODE
-#endif
+#ifndef SIMPLE_CHAT_FUNCTIONS_H
+#define SIMPLE_CHAT_FUNCTIONS_H
 
-#include <WinSock2.h>
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <WS2tcpip.h>
-#include <Windows.h>
-#include <malloc.h>
-#include <pthread.h>
 #include "simple-chat_tweaks.h"
 
-#pragma comment(lib, "WS2_32.lib")
-
-// The default message size
-#define MAX_MSG_SIZE 1024
-// The network port used by the app
 #define PORT 5000
+#define MAX_MSG_SIZE 1024
+#define MAX_CLIENTS 5
 
-// Definition of the functions declared on simple-chat_functions.c
-int checkPort5000();
-int getWirelessIP();
-SOCKET initialize_Socket_IPv4();
+typedef struct {
+    SOCKET socket;
+    int id;
+    pthread_t thread;
+    char buffer[MAX_MSG_SIZE];
+} Client;
+
+SOCKET initialize_Socket_IPv4(void);
 struct sockaddr_in generate_IPv4_Address(char* ip, int port);
+void flush_input(void);
+int getWirelessIP();
+
+#endif
