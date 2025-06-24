@@ -32,38 +32,6 @@ struct sockaddr_in generate_IPv4_Address(char* ip, int port) {
     return address;
 }
 
-// This function's purpose is to tell the clients which IPv4 addresses in the local network have the port used in the app (5000) open
-int checkPort5000() {
-    FILE* fp;
-    char buffer[MAX_MSG_SIZE];
-
-    // Run netstat and open a pipe to read the output as a file
-    fp = popen("netstat -an", "r");
-    if (fp == NULL)
-        // If the command does not work, print error and continue program, as client should usually be told the server's IP address
-        perror("Can't check open ports");
-
-    // Display all IP's
-    printf("IPs with port 5000 open:\n");
-
-    while (fgets(buffer, MAX_MSG_SIZE, fp) != NULL) {
-        // Look for lines with ":5000" and either LISTENING or ESTABLISHED
-        if (strstr(buffer, ":5000") && (strstr(buffer, "LISTENING") || strstr(buffer, "ESTABLISHED"))) {
-            char* ipStart = strtok(buffer, " "); // Tokenize by spaces
-            while (ipStart) {
-                if (strchr(ipStart, '.')) { // Find an IPv4 address
-                    printf("%s\n", ipStart);
-                    break;
-                }
-                ipStart = strtok(NULL, " ");
-            }
-        }
-    }
-
-    pclose(fp);
-    return 0;
-}
-
 // Tells the server what is it's current IP
 int getWirelessIP() {
     FILE* fp;
@@ -95,23 +63,4 @@ int getWirelessIP() {
         }
     }
     pclose(fp);
-}
-
-// Concatenates the user's name and the message, to ease sending to server and printing on other clients/broadcasting
-char* concat(char message[512], char username[30]) {
-    char* final_message;
-    strcat(final_message, username);
-    strcat(final_message, "> ");
-    strcat(final_message, message);
-
-    // Output should look like: "username> The message that the user inputed"
-    return final_message;
-}
-
-// Encripts messages using XOR decryption
-void encrypt(char text[512]) {
-    char key[12] = "X̌₽æþ¤";
-    for (int i = 0; i < strlen(text); i++) {
-        text[i] = text[i] ^ key[i % strlen(key)];
-    }
 }
