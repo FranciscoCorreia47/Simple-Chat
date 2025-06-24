@@ -1,6 +1,7 @@
 #include "simple-chat_functions.h"
 
 char buffer[MAX_MSG_SIZE];
+char username[30];
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* receive_messages(void* socket_ptr);
@@ -10,26 +11,33 @@ int main(void) {
     WSAStartup(MAKEWORD(2, 2), &wsa);
 
     char serverIp[INET_ADDRSTRLEN];
-    printf("Insert the server's IP:\n> ");
-    scanf("%s", serverIp);
-    flush_input();  // Prevent leftover \n
 
-    SOCKET server = initialize_Socket_IPv4();
-    struct sockaddr_in addr = generate_IPv4_Address(serverIp, PORT);
-
-    if (connect(server, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR) {
-        printf("Connection failed.\n");
-        closesocket(server);
-        WSACleanup();
-        return 1;
-    }
-
+    printf("Insert your username:\n> ");
+    scanf("%s", username);
+    flush_input();
+    
+    do{
+        printf("Insert the server's IP:\n> ");
+        scanf("%s", serverIp);
+        flush_input();  // Prevent leftover \n
+    
+        SOCKET server = initialize_Socket_IPv4();
+        struct sockaddr_in addr = generate_IPv4_Address(serverIp, PORT);
+    
+        if (connect(server, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR) {
+            printf("Connection failed.\n");
+            system("cls");
+        }
+    }while(connect(server, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR);
+    
     printf("Connected to server!\n");
 
     pthread_t receiver_thread;
     pthread_create(&receiver_thread, NULL, receive_messages, (void*)&server);
 
     char message[MAX_MSG_SIZE];
+    char final_message[1054];
+    
     while (1) {
         printf("You> ");
         pthread_mutex_lock(&print_mutex);
@@ -41,8 +49,10 @@ int main(void) {
         }
         pthread_mutex_unlock(&print_mutex);
 
+        final_message = concat(message, username);
+        
         if (strcmp(message, "/exit") == 0) {
-            send(server, message, strlen(message), 0);
+            send(server, final_message, strlen(final_message), 0);
             break;
         }
 
