@@ -1,5 +1,5 @@
 // Encripts messages using XOR decryption
-static void encrypt(char text[512]) {
+static void encrypt(char text[1024]) {
     char key[12] = "X̌₽æþ¤";
     for (int i = 0; i < strlen(text); i++) {
         text[i] = text[i] ^ key[i % strlen(key)];
@@ -7,7 +7,7 @@ static void encrypt(char text[512]) {
 }
 
 // Concatenates the user's name and the message, to ease sending to server and printing on other clients/broadcasting
-static char* concat(char message[512], char username[30]) {
+static char* concat(char message[1024], char username[30]) {
     char* final_message;
     strcat(final_message, username);
     strcat(final_message, "> ");
